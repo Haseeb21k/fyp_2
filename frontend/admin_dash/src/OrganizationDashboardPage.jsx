@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useRef } from "react";
 import { Link } from "react-router-dom";
+import { useAuth } from "./contexts/AuthContext";
 import OrganizationSummaryCards from "./components/OrganizationSummaryCards";
 import OrganizationTransactionTable from "./components/OrganizationTransactionTable";
 import OrganizationPieChart from "./components/OrganizationPieChart";
@@ -7,6 +8,7 @@ import OrganizationBarChart from "./components/OrganizationBarChart";
 import LoadingScreen from "./components/LoadingScreen";
 
 export default function OrganizationDashboardPage() {
+  const { user, logout } = useAuth();
   const transactionTableRef = useRef(null);
 
   // Track loading state for all 4 data components
@@ -46,9 +48,16 @@ export default function OrganizationDashboardPage() {
               Organization Dashboard
             </h1>
           </div>
-          <Link to="/org-upload" className="btn btn-light shadow-sm">
-            Upload More Files
-          </Link>
+          <div className="d-flex gap-2">
+            {user?.is_superuser && (
+              <Link to="/org-upload" className="btn btn-light shadow-sm">
+                Upload More Files
+              </Link>
+            )}
+            <button className="btn btn-light shadow-sm" onClick={logout}>
+              Logout
+            </button>
+          </div>
         </div>
       </div>
       <div className="container-fluid px-4">

@@ -6,3 +6,5 @@ python-multipart
 pandas
 python-dotenv
 psycopg2-binary
+python-jose[cryptography]
+bcrypt>=4.0.0
