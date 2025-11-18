@@ -1,5 +1,5 @@
-import React, { useState, useCallback, useRef } from "react";
-import { useLocation, Link, useNavigate } from "react-router-dom";
+import React, { useState, useCallback } from "react";
+import { useLocation } from "react-router-dom";
 import { useAuth } from "./contexts/AuthContext";
 import SummaryCards from "./components/SummaryCards";
 import TransactionTable from "./components/TransactionTable";
@@ -8,15 +8,17 @@ import PieChartByType from "./components/PieChartByType";
 import BarChartBySource from "./components/BarChartBySource";
 import LoadingScreen from "./components/LoadingScreen";
 import UserManagement from "./components/UserManagement";
+import UploadModal from "./components/UploadModal";
+import DashboardLayout from "./components/DashboardLayout";
 
 export default function DashboardPage() {
   const location = useLocation();
-  const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const initialView = location.state && location.state.view ? location.state.view : "csv";
   const [view] = useState(initialView);
-  const transactionTableRef = useRef(null);
   const [showUserManagement, setShowUserManagement] = useState(false);
+  const [showBankUploadModal, setShowBankUploadModal] = useState(false);
+  const [showOrgUploadModal, setShowOrgUploadModal] = useState(false);
 
   // Track loading state for all 4 data components
   const [loading, setLoading] = useState({
@@ -40,43 +42,33 @@ export default function DashboardPage() {
 
 
   return (
-    <div>
+    <DashboardLayout>
       {!allLoaded && <LoadingScreen />}
-      <div className="d-flex align-items-center justify-content-between py-4 ps-4 pe-4">
-        <div className="d-flex align-items-center">
-          <h1 className="fw-bold mb-0" style={{letterSpacing: 1}}>Transaction Dashboard</h1>
-        </div>
-        <div className="d-flex gap-2">
-          {user?.is_superuser && (
-            <>
-              <Link to="/upload" className="btn btn-primary shadow-sm">
-                Upload Files
-              </Link>
-              <button 
-                className="btn btn-outline-primary shadow-sm" 
-                onClick={() => setShowUserManagement(!showUserManagement)}
-              >
-                Manage Users
-              </button>
-              <Link to="/org-upload" className="btn btn-primary shadow-sm">
-                Organization Files
-              </Link>
-            </>
-          )}
-          <button className="btn btn-outline-secondary shadow-sm" onClick={logout}>
-            Logout
-          </button>
-        </div>
+      <div className="d-flex align-items-center justify-content-between py-4 px-4">
+        <h1 className="fw-bold mb-0" style={{ letterSpacing: 1 }}>
+          Bank Transaction Dashboard
+        </h1>
+        {user?.is_superuser && (
+          <div className="d-flex flex-wrap gap-2 justify-content-end">
+            <button
+              className="btn btn-primary shadow-sm"
+              onClick={() => setShowBankUploadModal(true)}
+            >
+              Upload Bank Files
+            </button>
+           
+          </div>
+        )}
       </div>
       {showUserManagement && user?.is_superuser && (
-        <div className="mb-4">
+        <div className="px-4 mb-4">
           <UserManagement />
         </div>
       )}
-      <div className="mb-4">
+      <div className="px-4 mb-4">
         <SummaryCards view={view} onLoaded={handleSummaryLoaded} />
       </div>
-      <div className="row mb-4">
+      <div className="row mb-4 px-4">
         <div className="col-md-6">
           <PieChartByType onLoaded={handlePieLoaded} />
         </div>
@@ -84,9 +76,31 @@ export default function DashboardPage() {
           <BarChartBySource onLoaded={handleBarLoaded} />
         </div>
       </div>
-      <div>
-        {view === "csv" ? <TransactionTable ref={transactionTableRef} onLoaded={handleTableLoaded} /> : <FixedTransactionTable onLoaded={handleTableLoaded} />}
+      <div className="px-4 pb-4">
+        {view === "csv" ? (
+          <TransactionTable onLoaded={handleTableLoaded} />
+        ) : (
+          <FixedTransactionTable onLoaded={handleTableLoaded} />
+        )}
       </div>
-    </div>
+
+      <UploadModal
+        title="Upload Bank Files"
+        description="Select CSV or MT940 files for the bank dashboard."
+        endpoint="/unified_upload"
+        accept=".csv,.txt,.mt940"
+        isOpen={showBankUploadModal}
+        onClose={() => setShowBankUploadModal(false)}
+      />
+
+      <UploadModal
+        title="Upload Organization Files"
+        description="Select CSV files for the organization dashboard."
+        endpoint="/org_upload"
+        accept=".csv"
+        isOpen={showOrgUploadModal}
+        onClose={() => setShowOrgUploadModal(false)}
+      />
+    </DashboardLayout>
   );
 } 

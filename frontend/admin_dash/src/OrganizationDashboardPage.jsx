@@ -1,17 +1,17 @@
-import React, { useState, useCallback, useRef } from "react";
-import { Link } from "react-router-dom";
+import React, { useState, useCallback } from "react";
 import { useAuth } from "./contexts/AuthContext";
 import OrganizationSummaryCards from "./components/OrganizationSummaryCards";
 import OrganizationTransactionTable from "./components/OrganizationTransactionTable";
 import OrganizationPieChart from "./components/OrganizationPieChart";
 import OrganizationBarChart from "./components/OrganizationBarChart";
 import LoadingScreen from "./components/LoadingScreen";
+import UploadModal from "./components/UploadModal";
+import DashboardLayout from "./components/DashboardLayout";
 
 export default function OrganizationDashboardPage() {
-  const { user, logout } = useAuth();
-  const transactionTableRef = useRef(null);
+  const { user } = useAuth();
+  const [showOrgUploadModal, setShowOrgUploadModal] = useState(false);
 
-  // Track loading state for all 4 data components
   const [loading, setLoading] = useState({
     summary: true,
     pie: true,
@@ -31,52 +31,41 @@ export default function OrganizationDashboardPage() {
   const allLoaded = Object.values(loading).every((v) => v === false);
 
   return (
-    <div style={{ backgroundColor: '#f8f9fa', minHeight: '100vh' }}>
+    <DashboardLayout>
       {!allLoaded && <LoadingScreen />}
-      <div style={{ 
-        background: 'linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%)',
-        padding: '2rem',
-        color: 'white',
-        marginBottom: '2rem'
-      }}>
-        <div className="d-flex align-items-center justify-content-between">
-          <div className="d-flex align-items-center">
-            <Link to="/dashboard" className="btn btn-light me-4 shadow-sm">
-              <span className="me-2">&#8592;</span> Back to Main Dashboard
-            </Link>
-            <h1 className="fw-bold mb-0" style={{ letterSpacing: 1, color: 'white' }}>
-              Organization Dashboard
-            </h1>
-          </div>
-          <div className="d-flex gap-2">
-            {user?.is_superuser && (
-              <Link to="/org-upload" className="btn btn-light shadow-sm">
-                Upload More Files
-              </Link>
-            )}
-            <button className="btn btn-light shadow-sm" onClick={logout}>
-              Logout
-            </button>
-          </div>
+      <div className="py-4 px-4 d-flex align-items-center justify-content-between">
+        <h1 className="fw-bold mb-0" style={{ letterSpacing: 1, color: "#6c5ce7" }}>
+          Organization Dashboard
+        </h1>
+        {user?.is_superuser && (
+          <button className="btn btn-primary shadow-sm" onClick={() => setShowOrgUploadModal(true)}>
+            Upload Organization Files
+          </button>
+        )}
+      </div>
+      <div className="px-4 mb-4">
+        <OrganizationSummaryCards onLoaded={handleSummaryLoaded} />
+      </div>
+      <div className="row mb-4 px-4">
+        <div className="col-md-6">
+          <OrganizationPieChart onLoaded={handlePieLoaded} />
+        </div>
+        <div className="col-md-6">
+          <OrganizationBarChart onLoaded={handleBarLoaded} />
         </div>
       </div>
-      <div className="container-fluid px-4">
-        <div className="mb-4">
-          <OrganizationSummaryCards onLoaded={handleSummaryLoaded} />
-        </div>
-        <div className="row mb-4">
-          <div className="col-md-6">
-            <OrganizationPieChart onLoaded={handlePieLoaded} />
-          </div>
-          <div className="col-md-6">
-            <OrganizationBarChart onLoaded={handleBarLoaded} />
-          </div>
-        </div>
-        <div>
-          <OrganizationTransactionTable ref={transactionTableRef} onLoaded={handleTableLoaded} />
-        </div>
+      <div className="px-4 pb-4">
+        <OrganizationTransactionTable onLoaded={handleTableLoaded} />
       </div>
-    </div>
+
+      <UploadModal
+        title="Upload Organization Files"
+        description="Select CSV files to update the organization dashboard."
+        endpoint="/org_upload"
+        accept=".csv"
+        isOpen={showOrgUploadModal}
+        onClose={() => setShowOrgUploadModal(false)}
+      />
+    </DashboardLayout>
   );
 }
-

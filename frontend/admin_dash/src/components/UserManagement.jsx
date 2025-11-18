@@ -49,6 +49,20 @@ export default function UserManagement() {
     }
   };
 
+  const handleDelete = async (userId, email) => {
+    if (!window.confirm(`Are you sure you want to delete ${email}?`)) {
+      return;
+    }
+    try {
+      await API.delete(`/auth/users/${userId}`);
+      setMessage(`User ${email} deleted successfully.`);
+      loadUsers();
+    } catch (error) {
+      console.error('Failed to delete user:', error);
+      setMessage(error.response?.data?.detail || 'Failed to delete user');
+    }
+  };
+
   if (loading) return <p>Loading users...</p>;
 
   return (
@@ -104,12 +118,20 @@ export default function UserManagement() {
                 </td>
                 <td>
                   {!user.is_superuser && (
-                    <button
-                      className={`btn btn-sm ${user.is_active ? 'btn-warning' : 'btn-success'}`}
-                      onClick={() => handleToggleActive(user.id, user.is_active)}
-                    >
-                      {user.is_active ? 'Deactivate' : 'Activate'}
-                    </button>
+                    <div className="d-flex gap-2">
+                      <button
+                        className={`btn btn-sm ${user.is_active ? 'btn-warning' : 'btn-success'}`}
+                        onClick={() => handleToggleActive(user.id, user.is_active)}
+                      >
+                        {user.is_active ? 'Deactivate' : 'Activate'}
+                      </button>
+                      <button
+                        className="btn btn-sm btn-outline-danger"
+                        onClick={() => handleDelete(user.id, user.email)}
+                      >
+                        Delete
+                      </button>
+                    </div>
                   )}
                 </td>
               </tr>
