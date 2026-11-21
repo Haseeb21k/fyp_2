@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useImperativeHandle, forwardRef } from "react";
 import API from "../api";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const TransactionTable = forwardRef(({ onLoaded }, ref) => {
   const [transactions, setTransactions] = useState([]);
@@ -9,7 +10,7 @@ const TransactionTable = forwardRef(({ onLoaded }, ref) => {
   const [loading, setLoading] = useState(false);
 
   useImperativeHandle(ref, () => ({
-    save: async () => true  // No-op since editing is disabled
+    save: async () => true
   }));
 
   useEffect(() => {
@@ -28,19 +29,17 @@ const TransactionTable = forwardRef(({ onLoaded }, ref) => {
   }, [currentPage, onLoaded]);
 
   if (loading && transactions.length === 0) {
-    return <p>Loading transactions...</p>;
+    return <div className="p-4 text-center text-gray-500">Loading transactions...</div>;
   }
   if (transactions.length === 0) {
-    return <p>No transactions found.</p>;
+    return <div className="p-4 text-center text-gray-500">No transactions found.</div>;
   }
 
-  // Only include columns that have at least one non-empty value
   const allColumns = Object.keys(transactions[0]);
   const nonEmptyColumns = allColumns.filter(col =>
     transactions.some(row => row[col] !== undefined && row[col] !== null && String(row[col]).trim() !== "")
   );
 
-  // Pagination logic
   const totalPages = Math.ceil(total / rowsPerPage);
 
   const renderCell = (rowIdx, col) => {
@@ -49,42 +48,53 @@ const TransactionTable = forwardRef(({ onLoaded }, ref) => {
     return String(val);
   };
 
-
   return (
     <div>
-      <div className="d-flex align-items-center mb-3">
-        <h2 className="mb-0">Transactions</h2>
-      </div>
-      <div className="card shadow-sm rounded-4">
-        <div className="table-responsive" style={{ maxHeight: 520 }}>
-          <table className="table table-hover table-sm align-middle mb-0">
-            <thead className="table-light" style={{ position: 'sticky', top: 0, zIndex: 1 }}>
+      <div className="overflow-x-auto">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
             <tr>
               {nonEmptyColumns.map((col) => (
-                <th key={col}>{col}</th>
+                <th key={col} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                  {col}
+                </th>
               ))}
             </tr>
-            </thead>
-            <tbody>
-              {transactions.map((txn, idx) => (
-              <tr key={idx}>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {transactions.map((txn, idx) => (
+              <tr key={idx} className="hover:bg-gray-50">
                 {nonEmptyColumns.map((col) => (
-                  <td key={col}>{renderCell(idx, col)}</td>
+                  <td key={col} className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {renderCell(idx, col)}
+                  </td>
                 ))}
               </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+            ))}
+          </tbody>
+        </table>
       </div>
-      <div className="d-flex justify-content-between align-items-center mt-3">
-        <button className="btn btn-secondary" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>
-          Prev
-        </button>
-        <span>Page {currentPage} of {totalPages}</span>
-        <button className="btn btn-secondary" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>
-          Next
-        </button>
+
+      <div className="flex items-center justify-between px-6 py-4 border-t border-gray-200">
+        <div className="text-sm text-gray-700">
+          Page <span className="font-medium">{currentPage}</span> of <span className="font-medium">{totalPages}</span>
+        </div>
+        <div className="flex gap-2">
+          <button
+            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+            disabled={currentPage === 1}
+            className="p-2 border rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+            disabled={currentPage === totalPages}
+            className="p-2 border rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
       </div>
     </div>
   );

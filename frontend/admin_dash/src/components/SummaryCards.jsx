@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import API from "../api";
-import { FaArrowUp, FaArrowDown, FaDollarSign, FaCreditCard } from "react-icons/fa";
+import { TrendingUp, TrendingDown, DollarSign, CreditCard } from "lucide-react";
 
 export default function SummaryCards({ onLoaded }) {
   const [summary, setSummary] = useState(null);
@@ -17,54 +17,56 @@ export default function SummaryCards({ onLoaded }) {
       });
   }, [onLoaded]);
 
-  if (!summary) return <p>Loading summary...</p>;
+  if (!summary) return (
+    <div className="grid grid-cols-1 md:grid-cols-4 gap-6 animate-pulse">
+      {[1, 2, 3, 4].map(i => <div key={i} className="h-32 bg-gray-200 rounded-xl"></div>)}
+    </div>
+  );
+
+  const Card = ({ title, value, icon: Icon, colorClass, bgClass }) => (
+    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="font-semibold text-gray-700">{title}</h3>
+        <div className={`p-2 rounded-full ${bgClass}`}>
+          <Icon className={`w-5 h-5 ${colorClass}`} />
+        </div>
+      </div>
+      <div className={`text-2xl font-bold ${colorClass}`}>
+        {value}
+      </div>
+    </div>
+  );
 
   return (
-    <div className="row row-cols-1 row-cols-md-4 g-4 justify-content-center">
-      <div className="col">
-        <div className="card shadow-sm rounded-4 border-0 h-100">
-          <div className="card-body text-center">
-            <div className="mb-2"><FaArrowUp size={24} className="text-success" /></div>
-            <h6 className="card-title text-muted">Total Income</h6>
-            <div className="fs-3 fw-bold text-success">
-              {Number(summary.total_fees_collected || 0).toLocaleString()}
-            </div>
-          </div>
-        </div>
-      </div>
-      <div className="col">
-        <div className="card shadow-sm rounded-4 border-0 h-100">
-          <div className="card-body text-center">
-            <div className="mb-2"><FaArrowDown size={24} className="text-danger" /></div>
-            <h6 className="card-title text-muted">Total Expenses</h6>
-            <div className="fs-3 fw-bold text-danger">
-              {Number(summary.total_debit || 0).toLocaleString()}
-            </div>
-          </div>
-        </div>
-      </div>
-      <div className="col">
-        <div className="card shadow-sm rounded-4 border-0 h-100">
-          <div className="card-body text-center">
-            <div className="mb-2"><FaDollarSign size={24} className="text-primary" /></div>
-            <h6 className="card-title text-muted">Net Balance</h6>
-            <div className="fs-3 fw-bold text-primary">
-              {Number(summary.latest_balance || 0).toLocaleString()}
-            </div>
-          </div>
-        </div>
-      </div>
-      <div className="col">
-        <div className="card shadow-sm rounded-4 border-0 h-100">
-          <div className="card-body text-center">
-            <div className="mb-2"><FaCreditCard size={24} className="text-purple" style={{color: '#7c3aed'}} /></div>
-            <h6 className="card-title text-muted">Total Transactions</h6>
-            <div className="fs-3 fw-bold" style={{color: '#7c3aed'}}>
-              {Number(summary.transaction_count || 0).toLocaleString()}
-            </div>
-          </div>
-        </div>
-      </div>
+    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <Card
+        title="Total Income"
+        value={Number(summary.total_fees_collected || 0).toLocaleString()}
+        icon={TrendingUp}
+        colorClass="text-green-600"
+        bgClass="bg-green-100"
+      />
+      <Card
+        title="Total Expenses"
+        value={Number(summary.total_debit || 0).toLocaleString()}
+        icon={TrendingDown}
+        colorClass="text-red-600"
+        bgClass="bg-red-100"
+      />
+      <Card
+        title="Net Balance"
+        value={Number(summary.latest_balance || 0).toLocaleString()}
+        icon={DollarSign}
+        colorClass="text-blue-600"
+        bgClass="bg-blue-100"
+      />
+      <Card
+        title="Transactions"
+        value={Number(summary.transaction_count || 0).toLocaleString()}
+        icon={CreditCard}
+        colorClass="text-purple-600"
+        bgClass="bg-purple-100"
+      />
     </div>
   );
 }

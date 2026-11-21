@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import API from '../api';
+import { Plus, Trash2, Shield, User } from 'lucide-react';
 
 export default function UserManagement() {
   const [users, setUsers] = useState([]);
@@ -63,75 +64,79 @@ export default function UserManagement() {
     }
   };
 
-  if (loading) return <p>Loading users...</p>;
+  if (loading) return <div className="p-4 text-center text-gray-500">Loading users...</div>;
 
   return (
-    <div className="card shadow-sm rounded-4 p-4">
-      <h3 className="mb-4">User Management</h3>
-      
-      <form onSubmit={handleRegister} className="mb-4">
-        <div className="row g-2">
-          <div className="col-md-8">
-            <input
-              type="email"
-              className="form-control"
-              placeholder="Enter work email"
-              value={newUserEmail}
-              onChange={(e) => setNewUserEmail(e.target.value)}
-              required
-            />
-          </div>
-          <div className="col-md-4">
-            <button type="submit" className="btn btn-primary w-100">Register User</button>
-          </div>
-        </div>
+    <div className="space-y-6">
+      {/* Add New User Form */}
+      <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+        <h3 className="text-sm font-bold text-gray-500 uppercase mb-4">Add New User</h3>
+        <form onSubmit={handleRegister} className="flex gap-4">
+          <input
+            type="email"
+            placeholder="Email Address"
+            className="flex-1 border rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+            value={newUserEmail}
+            onChange={e => setNewUserEmail(e.target.value)}
+            required
+          />
+          <button
+            type="submit"
+            className="bg-indigo-600 text-white px-4 py-2 rounded-lg flex items-center text-sm hover:bg-indigo-700 transition-colors"
+          >
+            <Plus className="w-4 h-4 mr-1" /> Register User
+          </button>
+        </form>
         {message && (
-          <div className={`alert mt-2 ${message.includes('success') ? 'alert-success' : 'alert-danger'}`}>
+          <div className={`mt-4 p-3 rounded-lg text-sm ${message.includes('successfully') ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'}`}>
             {message}
           </div>
         )}
-      </form>
+      </div>
 
-      <div className="table-responsive">
-        <table className="table table-striped">
-          <thead>
+      {/* Users Table */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
             <tr>
-              <th>Email</th>
-              <th>Role</th>
-              <th>Status</th>
-              <th>Actions</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">User</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Role</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="bg-white divide-y divide-gray-200">
             {users.map((user) => (
               <tr key={user.id}>
-                <td>{user.email}</td>
-                <td>
-                  <span className={`badge ${user.is_superuser ? 'bg-danger' : 'bg-secondary'}`}>
-                    {user.is_superuser ? 'Superuser' : 'User'}
-                  </span>
-                </td>
-                <td>
-                  <span className={`badge ${user.is_active ? 'bg-success' : 'bg-warning'}`}>
-                    {user.is_active ? 'Active' : 'Inactive'}
-                  </span>
-                </td>
-                <td>
-                  {!user.is_superuser && (
-                    <div className="d-flex gap-2">
-                      <button
-                        className={`btn btn-sm ${user.is_active ? 'btn-warning' : 'btn-success'}`}
-                        onClick={() => handleToggleActive(user.id, user.is_active)}
-                      >
-                        {user.is_active ? 'Deactivate' : 'Activate'}
-                      </button>
-                      <button
-                        className="btn btn-sm btn-outline-danger"
-                        onClick={() => handleDelete(user.id, user.email)}
-                      >
-                        Delete
-                      </button>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="flex items-center">
+                    <div className="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 font-bold text-xs">
+                      {user.email.charAt(0).toUpperCase()}
                     </div>
+                    <div className="ml-4">
+                      <div className="text-sm font-medium text-gray-900">{user.email}</div>
+                    </div>
+                  </div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full flex items-center w-fit ${user.is_superuser ? 'bg-purple-100 text-purple-800' : 'bg-green-100 text-green-800'}`}>
+                    {user.is_superuser ? <Shield className="w-3 h-3 mr-1" /> : <User className="w-3 h-3 mr-1" />}
+                    {user.is_superuser ? 'Superuser' : 'Standard'}
+                  </span>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <button
+                    onClick={() => handleToggleActive(user.id, user.is_active)}
+                    className={`text-xs font-medium px-2 py-1 rounded-full ${user.is_active ? 'bg-green-50 text-green-600 hover:bg-green-100' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
+                  >
+                    {user.is_active ? 'Active' : 'Suspended'}
+                  </button>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  {!user.is_superuser && (
+                    <button onClick={() => handleDelete(user.id, user.email)} className="text-red-600 hover:text-red-900 p-1 hover:bg-red-50 rounded">
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   )}
                 </td>
               </tr>
@@ -142,4 +147,3 @@ export default function UserManagement() {
     </div>
   );
 }
-
